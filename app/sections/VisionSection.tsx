@@ -18,6 +18,7 @@ type SectionItem = {
   image: string;
   type: "paragraph" | "values";
   text?: string;
+  lines?: string[];
   values?: ValueItem[];
 };
 
@@ -27,14 +28,26 @@ const SECTIONS: SectionItem[] = [
     navTitle: "OUR VISION",
     image: "/images/vision.jpg",
     type: "paragraph",
-    text: "To lead the region as the most influential content and marketing technology group, shaping culture, elevating creativity, and redefining how brands connect with audiences.",
+    lines: [
+      "To lead the region as the most",
+      "influential content and marketing",
+      "technology group, shaping culture,",
+      "elevating creativity, and redefining",
+      "how brands connect with audiences.",
+    ],
   },
   {
     id: 1,
     navTitle: "OUR MISSION",
     image: "/images/mission.jpg",
     type: "paragraph",
-    text: "To be the region’s most influential content and marketing technology group, shaping culture and elevating creativity while building the future of how brands connect with audiences.",
+    lines: [
+      "To be the region’s most influential",
+      "content and marketing technology",
+      "group shaping culture and elevating",
+      "creativity building the future of how",
+      "brands connect with audiences.",
+    ],
   },
   {
     id: 2,
@@ -77,7 +90,7 @@ export default function VisionMissionValuesSection() {
   const bgRefs = useRef<(HTMLDivElement | null)[]>([]);
   const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const paragraphTextRef = useRef<HTMLParagraphElement | null>(null);
+  const paragraphTextRef = useRef<HTMLDivElement | null>(null);
   const valuesGridRef = useRef<HTMLDivElement | null>(null);
 
   const valueItemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -149,13 +162,13 @@ export default function VisionMissionValuesSection() {
     if (activeSection.type === "paragraph" && paragraphTextRef.current) {
       gsap.fromTo(
         paragraphTextRef.current,
-        { opacity: 0, y: 35 },
+        { opacity: 0, y: 28 },
         {
           opacity: 1,
           y: 0,
           duration: 0.8,
           ease: "power3.out",
-          delay: 0.12,
+          delay: 0.08,
         }
       );
     }
@@ -199,7 +212,6 @@ export default function VisionMissionValuesSection() {
 
       gsap.to(title, {
         opacity: isActive ? 1 : 0.42,
-        y: isActive ? 0 : 0,
         duration: 0.25,
         ease: "power2.out",
       });
@@ -234,14 +246,21 @@ export default function VisionMissionValuesSection() {
 
   const renderParagraphContent = () => {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div ref={contentRef} className="max-w-[860px] px-2 md:px-0">
-          <p
+      <div className="flex h-full items-center">
+        <div
+          ref={contentRef}
+          className="ml-[90px] w-full max-w-[760px] md:ml-[120px] lg:ml-[145px]"
+        >
+          <div
             ref={paragraphTextRef}
-            className="max-w-[860px] text-[36px] font-medium leading-[1.02] tracking-[-0.045em] text-white sm:text-[48px] md:text-[64px] lg:text-[72px]"
+            className="max-w-[760px] text-left text-[30px] font-medium leading-[0.98] tracking-[-0.055em] text-white sm:text-[34px] md:text-[42px] lg:text-[48px]"
           >
-            {activeSection.text}
-          </p>
+            {(activeSection.lines || []).map((line, index) => (
+              <span key={index} className="block">
+                {line}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     );
