@@ -246,14 +246,14 @@ export default function VisionMissionValuesSection() {
 
   const renderParagraphContent = () => {
     return (
-      <div className="flex h-full items-center">
+      <div className="flex h-full items-start md:items-center">
         <div
           ref={contentRef}
-          className="ml-[90px] w-full max-w-[760px] md:ml-[120px] lg:ml-[145px]"
+          className="w-full max-w-full pt-6 md:ml-[120px] md:max-w-[760px] md:pt-0 lg:ml-[145px]"
         >
           <div
             ref={paragraphTextRef}
-            className="max-w-[760px] text-left text-[30px] font-medium leading-[0.98] tracking-[-0.055em] text-white sm:text-[34px] md:text-[42px] lg:text-[48px]"
+            className="max-w-[300px] text-left text-[20px] font-medium leading-[0.96] tracking-[-0.055em] text-white sm:max-w-[360px] sm:text-[24px] md:max-w-[760px] md:text-[42px] lg:text-[48px]"
           >
             {(activeSection.lines || []).map((line, index) => (
               <span key={index} className="block">
@@ -270,14 +270,14 @@ export default function VisionMissionValuesSection() {
     const values = activeSection.values || [];
 
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-start justify-start md:items-center md:justify-center">
         <div
           ref={contentRef}
-          className="relative z-30 w-full max-w-[1180px] pointer-events-auto"
+          className="relative z-30 w-full max-w-full pointer-events-auto pt-6 md:max-w-[1180px] md:pt-0"
         >
           <div
             ref={valuesGridRef}
-            className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4 xl:gap-8"
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8"
           >
             {values.map((value, index) => {
               const titleLines = value.title.split("\n");
@@ -292,13 +292,13 @@ export default function VisionMissionValuesSection() {
                   onClick={() => handleValueActivate(index)}
                   className="vmv-value-card block cursor-pointer select-none bg-transparent text-left"
                 >
-                  <div className="min-h-[220px]">
+                  <div className="min-h-[140px] md:min-h-[220px]">
                     <div className="flex items-start gap-3">
                       <span
                         ref={(el) => {
                           valueSlashRefs.current[index] = el;
                         }}
-                        className="block text-[42px] font-semibold leading-none tracking-[-0.08em] opacity-0 text-white"
+                        className="block text-[32px] font-semibold leading-none tracking-[-0.08em] text-white opacity-0 md:text-[42px]"
                       >
                         /
                       </span>
@@ -307,7 +307,7 @@ export default function VisionMissionValuesSection() {
                         ref={(el) => {
                           valueTitleRefs.current[index] = el;
                         }}
-                        className="text-[28px] font-semibold leading-[1.05] tracking-[-0.04em] text-white md:text-[32px]"
+                        className="text-[22px] font-semibold leading-[1.05] tracking-[-0.04em] text-white md:text-[32px]"
                       >
                         {titleLines.map((line, lineIndex) => (
                           <span key={lineIndex} className="block">
@@ -321,14 +321,14 @@ export default function VisionMissionValuesSection() {
                       ref={(el) => {
                         valueDescRefs.current[index] = el;
                       }}
-                      className="overflow-hidden pl-[34px]"
+                      className="overflow-hidden pl-[26px] md:pl-[34px]"
                       style={{
                         height: index === 0 ? "auto" : 0,
                         opacity: index === 0 ? 1 : 0,
                         marginTop: index === 0 ? 10 : 0,
                       }}
                     >
-                      <p className="max-w-[260px] text-[18px] leading-[1.25] tracking-[-0.025em] text-white/92 md:text-[19px]">
+                      <p className="max-w-[260px] text-[15px] leading-[1.3] tracking-[-0.025em] text-white/92 md:text-[19px]">
                         {value.description}
                       </p>
                     </div>
@@ -362,9 +362,9 @@ export default function VisionMissionValuesSection() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_72%,rgba(116,38,255,0.26),transparent_24%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.35),rgba(0,0,0,0.45))]" />
 
-        <div className="relative z-30 mx-auto flex h-full w-full max-w-[1440px] px-6 md:px-12">
-          <div className="w-[180px] shrink-0 pt-36 md:w-[230px] md:pt-52">
-            <div className="flex flex-col gap-5">
+        <div className="relative z-30 mx-auto flex h-full w-full max-w-[1440px] flex-col px-6 pb-8 pt-28 md:flex-row md:px-12 md:pb-0 md:pt-0">
+          <div className="w-full shrink-0 md:w-[230px] md:pt-52">
+            <div className="flex flex-col gap-4 md:gap-5">
               {SECTIONS.map((item, index) => (
                 <button
                   key={item.id}
@@ -373,7 +373,7 @@ export default function VisionMissionValuesSection() {
                   }}
                   type="button"
                   onClick={() => handleNavClick(index)}
-                  className={`pointer-events-auto text-left text-[20px] font-semibold uppercase leading-none tracking-[-0.03em] transition-all duration-300 md:text-[18px] ${
+                  className={`pointer-events-auto text-left text-[14px] font-semibold uppercase leading-none tracking-[-0.03em] transition-all duration-300 sm:text-[16px] md:text-[18px] ${
                     index === activeIndex ? "text-white" : "text-white/30"
                   }`}
                 >
@@ -383,7 +383,7 @@ export default function VisionMissionValuesSection() {
             </div>
           </div>
 
-          <div className="flex-1">
+          <div className="min-w-0 flex-1 overflow-hidden">
             {activeSection.type === "paragraph"
               ? renderParagraphContent()
               : renderValuesContent()}
