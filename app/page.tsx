@@ -4,6 +4,7 @@ import NextSection from "./sections/NextSection";
 import TeamsSection from "./sections/TeamsSection";
 import VisionSection from "./sections/VisionSection";
 import AwardsSection from "./sections/AwardsSection";
+import ProcessSection from "./sections/ProcessSection";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <TeamsSection />
       <VisionSection />
       <AwardsSection />
+      <ProcessSection />
     </main>
   );
 }
