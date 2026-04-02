@@ -142,22 +142,27 @@ export default function AwardsSection() {
         </div>
 
         <div className="relative mt-8 flex min-h-[360px] items-center justify-center md:min-h-[430px] lg:min-h-[500px]">
-          <div
-            ref={glowRef}
-            className="absolute z-0 h-[230px] w-[620px] rounded-full bg-[radial-gradient(circle,rgba(157,58,255,0.42)_0%,rgba(105,24,180,0.18)_40%,rgba(0,0,0,0)_72%)] blur-[18px] md:h-[260px] md:w-[760px] lg:h-[300px] lg:w-[900px]"
-          />
+          {/* 1) trophy */}
           <img
             ref={trophyRef}
             src="/images/trophy.png"
             alt="Award trophy"
             className="pointer-events-none absolute left-1/2 top-1/2 z-[1] w-[180px] -translate-x-1/2 -translate-y-1/2 opacity-90 sm:w-[220px] md:w-[280px] lg:w-[360px]"
           />
+
+          {/* 2) text */}
           <h3
             ref={wordRef}
-            className="pointer-events-none absolute left-1/2 top-1/2 z-[20] w-full -translate-x-1/2 -translate-y-1/2 bg-[linear-gradient(90deg,#ff4fa8_0%,#cc5fff_25%,#7b74ff_50%,#4f79ff_75%,#ff4fa8_100%)] bg-[length:200%_100%] bg-clip-text text-center text-[96px] font-medium tracking-[-0.07em] text-transparent opacity-70 sm:text-[125px] md:text-[170px] lg:text-[220px]"
+            className="pointer-events-none absolute left-1/2 top-1/2 z-[10] w-full -translate-x-1/2 -translate-y-1/2 bg-[linear-gradient(90deg,#ff4fa8_0%,#cc5fff_25%,#7b74ff_50%,#4f79ff_75%,#ff4fa8_100%)] bg-[length:200%_100%] bg-clip-text text-center text-[96px] font-medium tracking-[-0.07em] text-transparent opacity-70 sm:text-[125px] md:text-[170px] lg:text-[220px]"
           >
             {WORDS[activeWord]}
           </h3>
+
+          {/* 3) shadow فوق الكل */}
+          <div
+            ref={glowRef}
+            className="pointer-events-none absolute left-1/2 top-1/2 z-[20] h-[230px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(157,58,255,0.42)_0%,rgba(105,24,180,0.18)_40%,rgba(0,0,0,0)_72%)] blur-[18px] md:h-[260px] md:w-[760px] lg:h-[300px] lg:w-[900px]"
+          />
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-y-8 text-center sm:grid-cols-3 md:mt-6 md:grid-cols-5 md:gap-6">
