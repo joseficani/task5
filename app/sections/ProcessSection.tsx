@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FileSearch, Search, Lightbulb, Compass } from "lucide-react";
-import { createRoot, Root } from "react-dom/client";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -63,7 +62,6 @@ export default function ProcessSection() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const progressRef = useRef<HTMLDivElement | null>(null);
   const activeIconRef = useRef<HTMLDivElement | null>(null);
-  const activeIconInnerRef = useRef<HTMLDivElement | null>(null);
 
   const dotRef = useRef<(HTMLDivElement | null)[]>([]);
   const dotInnerRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -71,17 +69,16 @@ export default function ProcessSection() {
   const cardRef = useRef<(HTMLDivElement | null)[]>([]);
   const titleRef = useRef<(HTMLHeadingElement | null)[]>([]);
   const itemRef = useRef<(HTMLLIElement[] | null)[]>([]);
-  const iconRootRef = useRef<Root | null>(null);
+
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      const section = sectionRef.current!;
       const track = trackRef.current;
       const progress = progressRef.current;
       const activeIcon = activeIconRef.current;
-      const activeIconInner = activeIconInnerRef.current;
 
       const dotNodes = dotRef.current.filter(Boolean) as HTMLDivElement[];
       const dotInnerNodes = dotInnerRef.current.filter(Boolean) as HTMLDivElement[];
@@ -93,7 +90,6 @@ export default function ProcessSection() {
         !track ||
         !progress ||
         !activeIcon ||
-        !activeIconInner ||
         dotNodes.length !== STEPS.length ||
         dotInnerNodes.length !== STEPS.length ||
         cardWrapNodes.length !== STEPS.length ||
@@ -102,17 +98,6 @@ export default function ProcessSection() {
       ) {
         return;
       }
-
-      if (!iconRootRef.current) {
-        iconRootRef.current = createRoot(activeIconInner);
-      }
-
-      const renderIcon = (index: number) => {
-        const CurrentIcon = STEPS[index].icon;
-        iconRootRef.current?.render(
-          <CurrentIcon size={18} strokeWidth={1.9} className="text-white" />
-        );
-      };
 
       const getDotCenterXInTrack = (index: number) => {
         const trackRect = track.getBoundingClientRect();
@@ -168,7 +153,7 @@ export default function ProcessSection() {
 
       const setCardVisualState = (
         index: number,
-        activeIndex: number,
+        currentActiveIndex: number,
         hasStarted: boolean
       ) => {
         const card = cardNodes[index];
@@ -178,8 +163,8 @@ export default function ProcessSection() {
         const title = titleNodes[index];
         const items = itemRef.current[index] || [];
 
-        const isActive = hasStarted && index === activeIndex;
-        const isPrevious = hasStarted && index < activeIndex;
+        const isActive = hasStarted && index === currentActiveIndex;
+        const isPrevious = hasStarted && index < currentActiveIndex;
 
         gsap.to(card, {
           opacity: 1,
@@ -266,11 +251,11 @@ export default function ProcessSection() {
         });
       };
 
-      const setDotsState = (activeIndex: number, hasStarted: boolean) => {
+      const setDotsState = (currentActiveIndex: number, hasStarted: boolean) => {
         dotNodes.forEach((dot, index) => {
           const inner = dotInnerNodes[index];
-          const isActive = hasStarted && index === activeIndex;
-          const isPrevious = hasStarted && index < activeIndex;
+          const isActive = hasStarted && index === currentActiveIndex;
+          const isPrevious = hasStarted && index < currentActiveIndex;
 
           gsap.to(dot, {
             opacity: isActive ? 0 : isPrevious ? 0.72 : 0.55,
@@ -294,36 +279,36 @@ export default function ProcessSection() {
 
       let lastActiveIndex = -1;
 
-      const setStepState = (activeIndex: number, hasStarted: boolean) => {
+      const setStepState = (currentActiveIndex: number, hasStarted: boolean) => {
+        setActiveIndex(currentActiveIndex);
+
         cardNodes.forEach((_, index) =>
-          setCardVisualState(index, activeIndex, hasStarted)
+          setCardVisualState(index, currentActiveIndex, hasStarted)
         );
 
-        setDotsState(activeIndex, hasStarted);
+        setDotsState(currentActiveIndex, hasStarted);
 
         if (hasStarted) {
-          if (activeIndex !== lastActiveIndex) {
-            pulseActiveCard(activeIndex);
-            lastActiveIndex = activeIndex;
+          if (currentActiveIndex !== lastActiveIndex) {
+            pulseActiveCard(currentActiveIndex);
+            lastActiveIndex = currentActiveIndex;
           }
 
           gsap.to(activeIcon, {
             autoAlpha: 1,
-            x: getDotCenterXInTrack(activeIndex) - ICON_SIZE / 2,
+            x: getDotCenterXInTrack(currentActiveIndex) - ICON_SIZE / 2,
             duration: 0.5,
             ease: "power3.out",
             overwrite: "auto",
           });
 
           gsap.to(progress, {
-            width: getProgressWidth(activeIndex),
+            width: getProgressWidth(currentActiveIndex),
             opacity: 1,
             duration: 0.4,
             ease: "power2.out",
             overwrite: "auto",
           });
-
-          renderIcon(activeIndex);
         } else {
           lastActiveIndex = -1;
 
@@ -345,7 +330,7 @@ export default function ProcessSection() {
 
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: section,
+          trigger: sectionRef.current,
           start: "top top",
           end: "+=3600",
           scrub: true,
@@ -356,48 +341,36 @@ export default function ProcessSection() {
       });
 
       tl.to({}, { duration: 0.6, onUpdate: () => setStepState(0, false) })
-        .to(
-          {},
-          {
-            duration: 1,
-            onStart: () => setStepState(0, true),
-            onReverseComplete: () => setStepState(0, false),
-          }
-        )
-        .to(
-          {},
-          {
-            duration: 1,
-            onStart: () => setStepState(1, true),
-            onReverseComplete: () => setStepState(0, true),
-          }
-        )
-        .to(
-          {},
-          {
-            duration: 1,
-            onStart: () => setStepState(2, true),
-            onReverseComplete: () => setStepState(1, true),
-          }
-        )
-        .to(
-          {},
-          {
-            duration: 1,
-            onStart: () => setStepState(3, true),
-            onReverseComplete: () => setStepState(2, true),
-          }
-        );
+        .to({}, {
+          duration: 1,
+          onStart: () => setStepState(0, true),
+          onReverseComplete: () => setStepState(0, false),
+        })
+        .to({}, {
+          duration: 1,
+          onStart: () => setStepState(1, true),
+          onReverseComplete: () => setStepState(0, true),
+        })
+        .to({}, {
+          duration: 1,
+          onStart: () => setStepState(2, true),
+          onReverseComplete: () => setStepState(1, true),
+        })
+        .to({}, {
+          duration: 1,
+          onStart: () => setStepState(3, true),
+          onReverseComplete: () => setStepState(2, true),
+        });
 
       ScrollTrigger.refresh();
     }, sectionRef);
 
     return () => {
       ctx.revert();
-      iconRootRef.current?.unmount();
-      iconRootRef.current = null;
     };
   }, []);
+
+  const ActiveIcon = STEPS[activeIndex].icon;
 
   return (
     <section
@@ -453,7 +426,9 @@ export default function ProcessSection() {
                 className="absolute left-0 top-0 z-20 flex h-[62px] w-[62px] items-center justify-center rounded-full border border-[#a35eff]/25 bg-[radial-gradient(circle_at_center,rgba(170,92,255,0.34)_0%,rgba(116,45,213,0.18)_44%,rgba(21,10,43,0.96)_72%,rgba(8,5,18,1)_100%)] shadow-[0_0_22px_rgba(167,89,255,0.24),0_0_52px_rgba(103,45,210,0.18)]"
               >
                 <div className="absolute inset-[7px] rounded-full border border-white/6" />
-                <div ref={activeIconInnerRef} className="relative z-10" />
+                <div className="relative z-10 flex items-center justify-center">
+                  <ActiveIcon size={18} strokeWidth={1.9} className="text-white" />
+                </div>
               </div>
             </div>
           </div>
