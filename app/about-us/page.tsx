@@ -62,8 +62,22 @@ type AboutSectionData = {
   cards: AboutCard[];
 };
 
+type StorySlide = {
+  id: number;
+  order: number;
+  title: string;
+  text: string;
+  lottieUrl: string;
+  lottieData: object | null;
+};
+
+type StorySectionData = {
+  slides: StorySlide[];
+};
+
 type AboutPageData = {
   hero: AboutHeroData | null;
+  story: StorySectionData | null;
   whyChooseUs: AboutSectionData | null;
 };
 
@@ -87,6 +101,9 @@ async function getAboutPageData(): Promise<AboutPageData> {
   const bannerSection =
     sections.find((item) => item.handle === "home-section-banner-1") || null;
 
+  const storySection =
+    sections.find((item) => item.handle === "home-section-list-1") || null;
+
   const whyChooseUsSection =
     sections.find(
       (item) =>
@@ -104,6 +121,34 @@ async function getAboutPageData(): Promise<AboutPageData> {
           "Beyond simple connectivity. We design, deploy, and manage the complete ground segment and terrestrial integration for complex global enterprises and MNOs.",
       }
     : null;
+
+  let story: StorySectionData | null = null;
+
+  if (storySection?.details?.list) {
+    const activeSlides = storySection.details.list
+      .filter((item) => item.is_active === 1)
+      .sort((a, b) => a.order - b.order);
+
+    const slides: StorySlide[] = await Promise.all(
+      activeSlides.map(async (item) => {
+        const lottieUrl =
+          typeof item.image === "string" ? item.image : item.image?.[0] || "";
+
+        const lottieData = lottieUrl ? await fetchJson<object>(lottieUrl) : null;
+
+        return {
+          id: item.id,
+          order: item.order,
+          title: item.title,
+          text: item.text || "",
+          lottieUrl,
+          lottieData,
+        };
+      })
+    );
+
+    story = { slides };
+  }
 
   let whyChooseUs: AboutSectionData | null = null;
 
@@ -139,6 +184,7 @@ async function getAboutPageData(): Promise<AboutPageData> {
 
   return {
     hero,
+    story,
     whyChooseUs,
   };
 }
@@ -149,6 +195,7 @@ export default async function AboutUsPage() {
   return (
     <AboutUsPageContent
       hero={pageData.hero}
+      storySection={pageData.story}
       whyChooseUsSection={pageData.whyChooseUs}
     />
   );
