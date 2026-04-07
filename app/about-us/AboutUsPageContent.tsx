@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import Lottie from "lottie-react";
+import { useEffect, useMemo, useRef } from "react";
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import { CircleGauge, Orbit, RefreshCcw } from "lucide-react";
+import FixedNavbar from "../sections/FixedNavbar";
+import SiteFooter from "../sections/SiteFooter";
 
 type AboutCard = {
   id: number;
@@ -52,134 +53,73 @@ function FallbackIcon({ title }: { title: string }) {
   return <RefreshCcw size={68} strokeWidth={1.3} className="text-[#4478ff]" />;
 }
 
-function AboutMenu() {
-  const [open, setOpen] = useState(false);
-
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "About Us", href: "#about-hero" },
-    { label: "Why Choose Us", href: "#why-choose-us" },
-    { label: "Contact", href: "#about-footer" },
-  ];
-
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#081326]/85 backdrop-blur-md">
-      <div className="container mx-auto flex items-center justify-between px-6 py-4 md:px-12">
-        <Link href="/" className="text-xl font-semibold tracking-tight text-white">
-          Home
-        </Link>
-
-        <nav className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) =>
-            item.href.startsWith("/") ? (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium text-white/80 transition hover:text-white"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <a
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium text-white/80 transition hover:text-white"
-              >
-                {item.label}
-              </a>
-            )
-          )}
-        </nav>
-
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white md:hidden"
-          aria-label="Toggle menu"
-        >
-          ☰
-        </button>
-      </div>
-
-      {open && (
-        <div className="border-t border-white/10 bg-[#081326] md:hidden">
-          <div className="container mx-auto flex flex-col px-6 py-4">
-            {navItems.map((item) =>
-              item.href.startsWith("/") ? (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="py-3 text-sm font-medium text-white/80 transition hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="py-3 text-sm font-medium text-white/80 transition hover:text-white"
-                >
-                  {item.label}
-                </a>
-              )
-            )}
-          </div>
-        </div>
-      )}
-    </header>
-  );
-}
-
-function AboutFooter() {
-  return (
-    <footer
-      id="about-footer"
-      className="border-t border-[#20304d] bg-[#081326] text-white"
-    >
-      <div className="container mx-auto grid gap-10 px-6 py-12 md:grid-cols-3 md:px-12">
-        <div>
-          <h3 className="text-lg font-semibold">Home</h3>
-          <p className="mt-3 max-w-sm text-sm leading-6 text-white/70">
-            Delivering integrated connectivity and managed services with scalable
-            and tailored solutions for global operations.
-          </p>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-            Links
-          </h4>
-          <div className="mt-4 flex flex-col gap-3 text-sm text-white/80">
-            <Link href="/">Home</Link>
-            <a href="#about-hero">About Us</a>
-            <a href="#why-choose-us">Why Choose Us</a>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-            Contact
-          </h4>
-          <p className="mt-4 text-sm leading-6 text-white/70">
-            Contact us for more information.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 function WhyChooseUsSection({
   section,
 }: {
   section: AboutSectionData | null;
 }) {
   const cards = useMemo(() => section?.cards || [], [section]);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const hasPlayedOnScroll = useRef(false);
+
+  const lottieRefs = useRef<
+    Record<number, React.MutableRefObject<LottieRefCurrentProps | null>>
+  >({});
+
+  const getLottieRef = (id: number) => {
+    if (!lottieRefs.current[id]) {
+      lottieRefs.current[id] = {
+        current: null,
+      };
+    }
+
+    return lottieRefs.current[id];
+  };
+
+  useEffect(() => {
+    const sectionEl = sectionRef.current;
+    if (!sectionEl || cards.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasPlayedOnScroll.current) {
+          hasPlayedOnScroll.current = true;
+
+          cards.forEach((card) => {
+            const lottie = lottieRefs.current[card.id]?.current;
+            if (lottie) {
+              lottie.stop();
+              lottie.play();
+            }
+          });
+        }
+      },
+      {
+        threshold: 0.35,
+      }
+    );
+
+    observer.observe(sectionEl);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [cards]);
+
+  const handleHoverPlay = (id: number) => {
+    const lottie = lottieRefs.current[id]?.current;
+    if (lottie) {
+      lottie.stop();
+      lottie.play();
+    }
+  };
 
   return (
-    <section id="why-choose-us" className="bg-[#f2f3f7] py-20 md:py-28">
+    <section
+      ref={sectionRef}
+      id="why-choose-us"
+      className="bg-[#f2f3f7] py-20 md:py-28"
+    >
       <div className="container mx-auto px-6 md:px-12">
         <div className="mx-auto max-w-[760px] text-center">
           <p className="text-[13px] uppercase tracking-[0.34em] text-[#8b7d71]">
@@ -202,13 +142,15 @@ function WhyChooseUsSection({
             <div
               key={item.id}
               className="flex flex-col items-center text-center"
+              onMouseEnter={() => handleHoverPlay(item.id)}
             >
               <div className="flex h-[92px] w-[92px] items-center justify-center">
                 {item.lottieData ? (
                   <Lottie
+                    lottieRef={getLottieRef(item.id)}
                     animationData={item.lottieData}
-                    loop
-                    autoplay
+                    loop={false}
+                    autoplay={false}
                     className="h-[86px] w-[86px]"
                   />
                 ) : (
@@ -240,7 +182,11 @@ export default function AboutUsPageContent({
 }) {
   return (
     <main className="min-h-screen bg-[#081326] text-white">
-      <AboutMenu />
+      <FixedNavbar
+        aboutHref="#about-hero"
+        whyChooseUsHref="#why-choose-us"
+        contactHref="#site-footer"
+      />
 
       <section
         id="about-hero"
@@ -263,7 +209,10 @@ export default function AboutUsPageContent({
 
       <WhyChooseUsSection section={whyChooseUsSection} />
 
-      <AboutFooter />
+      <SiteFooter
+        aboutHref="#about-hero"
+        whyChooseUsHref="#why-choose-us"
+      />
     </main>
   );
 }
