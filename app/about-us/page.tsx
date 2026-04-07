@@ -1,3 +1,4 @@
+
 import AboutUsPageContent from "./AboutUsPageContent";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,9 @@ type ApiListItem = {
   text: string;
   image: string | string[];
   mobile_image?: string[] | string;
+  cta_text?: string;
+  cta_link?: string;
+  cta_page_alias?: string;
   is_active: number;
 };
 
@@ -75,9 +79,27 @@ type StorySectionData = {
   slides: StorySlide[];
 };
 
+type GlobalPresenceStat = {
+  id: number;
+  order: number;
+  title: string;
+  value: string;
+};
+
+type GlobalPresenceData = {
+  title: string;
+  subtitle: string;
+  mapLottieUrl: string;
+  mapLottieData: object | null;
+  ctaText: string;
+  ctaHref: string;
+  stats: GlobalPresenceStat[];
+};
+
 type AboutPageData = {
   hero: AboutHeroData | null;
   story: StorySectionData | null;
+  globalPresence: GlobalPresenceData | null;
   whyChooseUs: AboutSectionData | null;
 };
 
@@ -89,6 +111,17 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   } catch {
     return null;
   }
+}
+
+function resolveHref(link?: string, alias?: string) {
+  if (link?.trim()) return link.trim();
+  if (alias?.trim()) return `/${alias.trim()}`;
+  return "#";
+}
+
+function cleanText(value?: string) {
+  if (!value) return "";
+  return value.replace(/<\/?p>/g, "").trim();
 }
 
 async function getAboutPageData(): Promise<AboutPageData> {
@@ -103,6 +136,12 @@ async function getAboutPageData(): Promise<AboutPageData> {
 
   const storySection =
     sections.find((item) => item.handle === "home-section-list-1") || null;
+
+  const globalPresenceImageSection =
+    sections.find((item) => item.handle === "home-section-image-5") || null;
+
+  const globalPresenceStatsSection =
+    sections.find((item) => item.handle === "home-section-list-6") || null;
 
   const whyChooseUsSection =
     sections.find(
@@ -150,6 +189,45 @@ async function getAboutPageData(): Promise<AboutPageData> {
     story = { slides };
   }
 
+  let globalPresence: GlobalPresenceData | null = null;
+
+  if (globalPresenceImageSection) {
+    const mapLottieUrl =
+      typeof globalPresenceImageSection.details?.image === "string"
+        ? globalPresenceImageSection.details.image
+        : globalPresenceImageSection.details?.image?.[0] || "";
+
+    const mapLottieData = mapLottieUrl
+      ? await fetchJson<object>(mapLottieUrl)
+      : null;
+
+    const stats: GlobalPresenceStat[] =
+      globalPresenceStatsSection?.details?.list
+        ?.filter((item) => item.is_active === 1)
+        .sort((a, b) => a.order - b.order)
+        .map((item) => ({
+          id: item.id,
+          order: item.order,
+          title: item.title,
+          value: cleanText(item.text),
+        })) || [];
+
+    globalPresence = {
+      title: globalPresenceImageSection.title || "GLOBAL PRESENCE",
+      subtitle:
+        globalPresenceImageSection.subtitle ||
+        "Globally Certified Operations Across ::120+ Countries::",
+      mapLottieUrl,
+      mapLottieData,
+      ctaText: globalPresenceImageSection.details?.cta_text || "VIEW USE CASES",
+      ctaHref: resolveHref(
+        globalPresenceImageSection.details?.cta_link,
+        globalPresenceImageSection.details?.cta_page_alias
+      ),
+      stats,
+    };
+  }
+
   let whyChooseUs: AboutSectionData | null = null;
 
   if (whyChooseUsSection?.details?.list) {
@@ -185,6 +263,7 @@ async function getAboutPageData(): Promise<AboutPageData> {
   return {
     hero,
     story,
+    globalPresence,
     whyChooseUs,
   };
 }
@@ -196,6 +275,7 @@ export default async function AboutUsPage() {
     <AboutUsPageContent
       hero={pageData.hero}
       storySection={pageData.story}
+      globalPresenceSection={pageData.globalPresence}
       whyChooseUsSection={pageData.whyChooseUs}
     />
   );

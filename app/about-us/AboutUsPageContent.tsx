@@ -43,6 +43,23 @@ type StorySectionData = {
   slides: StorySlide[];
 };
 
+type GlobalPresenceStat = {
+  id: number;
+  order: number;
+  title: string;
+  value: string;
+};
+
+type GlobalPresenceData = {
+  title: string;
+  subtitle: string;
+  mapLottieUrl: string;
+  mapLottieData: object | null;
+  ctaText: string;
+  ctaHref: string;
+  stats: GlobalPresenceStat[];
+};
+
 function titleToLines(value?: string) {
   if (!value) return [];
   return value
@@ -78,6 +95,27 @@ function formatHighlightedTitle(value?: string) {
             </span>
           );
         })}
+      </span>
+    );
+  });
+}
+
+function renderDoubleColonHighlight(
+  value?: string,
+  normalClass = "text-white",
+  highlightClass = "text-[#1492ff]"
+) {
+  if (!value) return null;
+
+  const parts = value.split(/(::.*?::)/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    const isHighlight = part.startsWith("::") && part.endsWith("::");
+    const text = isHighlight ? part.slice(2, -2) : part;
+
+    return (
+      <span key={index} className={isHighlight ? highlightClass : normalClass}>
+        {text}
       </span>
     );
   });
@@ -141,7 +179,7 @@ function StorySection({ section }: { section: StorySectionData | null }) {
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: `+=${total * 900}`,
+          end: `+=${total * 400}`,
           scrub: true,
           pin: true,
           anticipatePin: 1,
@@ -215,6 +253,119 @@ function StorySection({ section }: { section: StorySectionData | null }) {
                 </p>
               )}
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GlobalPresenceSection({
+  section,
+}: {
+  section: GlobalPresenceData | null;
+}) {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const mapWrapRef = useRef<HTMLDivElement | null>(null);
+  const lottieRef = useRef<LottieRefCurrentProps | null>(null);
+
+  useEffect(() => {
+    if (!sectionRef.current || !mapWrapRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.set(mapWrapRef.current, {
+        scale: 0.48,
+        y: 150,
+        transformOrigin: "center center",
+      });
+
+      gsap.to(mapWrapRef.current, {
+        scale: 1.18,
+        y: -10,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 92%",
+          end: "top 28%",
+          scrub: 1.2,
+        },
+      });
+
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 92%",
+        onEnter: () => {
+          lottieRef.current?.play();
+        },
+        onEnterBack: () => {
+          lottieRef.current?.play();
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  if (!section) return null;
+
+  return (
+    <section
+      ref={sectionRef}
+      id="global-presence"
+      className="relative overflow-hidden bg-[linear-gradient(180deg,#2f63c7_0%,#263ea7_36%,#1b1e83_72%,#10145f_100%)] text-white"
+    >
+      <div className="container mx-auto px-6 pb-0 pt-10 md:px-12 md:pt-12">
+        <div className="flex flex-col gap-10 md:gap-12">
+          <div className="grid gap-10 lg:grid-cols-[1.18fr_0.82fr] lg:items-start">
+            <div className="max-w-[640px]">
+              <p className="text-[12px] uppercase tracking-[0.28em] text-white/45 md:text-[13px]">
+                {section.title}
+              </p>
+
+              <h2 className="mt-4 max-w-[620px] text-[42px] font-semibold leading-[1.02] tracking-[-0.04em] text-white md:text-[64px]">
+                {renderDoubleColonHighlight(
+                  section.subtitle,
+                  "text-white",
+                  "text-[#1492ff]"
+                )}
+              </h2>
+
+              <a
+                href={section.ctaHref || "#"}
+                className="mt-10 inline-flex h-[44px] items-center justify-center rounded-full bg-[linear-gradient(90deg,#3d65f2_0%,#2d63df_100%)] px-8 text-[13px] font-semibold uppercase tracking-[0.08em] text-white transition-all duration-300 hover:scale-[1.03]"
+              >
+                {section.ctaText}
+                <span className="ml-2 text-[16px]">→</span>
+              </a>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 pt-4 lg:justify-self-end lg:pt-8">
+              {section.stats.map((item) => (
+                <div key={item.id} className="text-center">
+                  <div className="text-[52px] font-light leading-none tracking-[-0.04em] text-white md:text-[62px]">
+                    {item.value}
+                  </div>
+                  <p className="mt-6 text-[16px] leading-none text-white/85 md:text-[18px]">
+                    {item.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            ref={mapWrapRef}
+            className="relative mx-auto -mb-8 w-[144%] max-w-none -translate-x-[11.5%] md:-mb-10 md:w-[136%] md:-translate-x-[9.5%] lg:-mb-12 lg:w-[130%] lg:-translate-x-[7.5%]"
+          >
+            {section.mapLottieData ? (
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={section.mapLottieData}
+                loop={true}
+                autoplay={true}
+                className="pointer-events-none block h-auto w-full"
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -345,10 +496,12 @@ function WhyChooseUsSection({
 export default function AboutUsPageContent({
   hero,
   storySection,
+  globalPresenceSection,
   whyChooseUsSection,
 }: {
   hero: AboutHeroData | null;
   storySection: StorySectionData | null;
+  globalPresenceSection: GlobalPresenceData | null;
   whyChooseUsSection: AboutSectionData | null;
 }) {
   return (
@@ -379,6 +532,8 @@ export default function AboutUsPageContent({
       </section>
 
       <StorySection section={storySection} />
+
+      <GlobalPresenceSection section={globalPresenceSection} />
 
       <WhyChooseUsSection section={whyChooseUsSection} />
 
