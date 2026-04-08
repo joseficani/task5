@@ -210,8 +210,8 @@ function CountUpNumber({
 
     ref.current.textContent = `${prefix}0${suffix}`;
 
-    return () => {
-      trigger.kill();
+    return  () => {
+     trigger.kill();
     };
   }, [value, duration]);
 
