@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -10,24 +11,11 @@ import SiteFooter from "../sections/SiteFooter";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type AboutCard = {
-  id: number;
-  order: number;
-  title: string;
-  subtitle: string;
-  lottieUrl: string;
-  lottieData: object | null;
-};
-
 type AboutHeroData = {
   title: string;
   subtitle: string;
-};
-
-type AboutSectionData = {
-  title: string;
-  subtitle: string;
-  cards: AboutCard[];
+  ctaText: string;
+  ctaHref: string;
 };
 
 type StorySlide = {
@@ -41,6 +29,24 @@ type StorySlide = {
 
 type StorySectionData = {
   slides: StorySlide[];
+};
+
+type ServicesImageCard = {
+  id: number;
+  order: number;
+  title: string;
+  imageUrl: string;
+};
+
+type ServicesShowcaseData = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  statValue: string;
+  statLabel: string;
+  ctaText: string;
+  ctaHref: string;
+  cards: ServicesImageCard[];
 };
 
 type GlobalPresenceStat = {
@@ -60,17 +66,32 @@ type GlobalPresenceData = {
   stats: GlobalPresenceStat[];
 };
 
+type WhyChooseUsCard = {
+  id: number;
+  order: number;
+  title: string;
+  subtitle: string;
+  lottieUrl: string;
+  lottieData: object | null;
+};
+
+type WhyChooseUsData = {
+  title: string;
+  subtitle: string;
+  cards: WhyChooseUsCard[];
+};
+
+function cleanText(value?: string) {
+  if (!value) return "";
+  return value.replace(/<\/?p>/g, "").trim();
+}
+
 function titleToLines(value?: string) {
   if (!value) return [];
   return value
     .split(";;;")
     .map((part) => part.trim())
     .filter(Boolean);
-}
-
-function cleanText(value?: string) {
-  if (!value) return "";
-  return value.replace(/<\/?p>/g, "").trim();
 }
 
 function formatHighlightedTitle(value?: string) {
@@ -179,7 +200,7 @@ function StorySection({ section }: { section: StorySectionData | null }) {
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: `+=${total * 400}`,
+          end: `+=${total * 420}`,
           scrub: true,
           pin: true,
           anticipatePin: 1,
@@ -207,7 +228,7 @@ function StorySection({ section }: { section: StorySectionData | null }) {
       <div className="container mx-auto min-h-screen px-6 md:px-12">
         <div className="grid min-h-screen items-center gap-12 md:grid-cols-[45%_55%]">
           <div className="flex items-center justify-center">
-            <div className="w-full max-w-[540px]">
+            <div className="w-full max-w-[560px]">
               {slides.map((slide, index) => (
                 <div
                   key={slide.id}
@@ -235,7 +256,7 @@ function StorySection({ section }: { section: StorySectionData | null }) {
 
           <div className="flex items-center">
             <div className="max-w-[640px]">
-              <p className="mb-8 max-w-[900px] text-[15px] uppercase leading-[1.55] tracking-[0.28em] text-[#907b70] md:text-[18px]">
+              <p className="mb-8 text-[15px] uppercase leading-[1.55] tracking-[0.28em] text-[#907b70] md:text-[18px]">
                 {activeSlide.order === 1
                   ? "ORCHESTRATING"
                   : activeSlide.order === 2
@@ -260,6 +281,228 @@ function StorySection({ section }: { section: StorySectionData | null }) {
   );
 }
 
+function ServiceImageCard({
+  title,
+  imageUrl,
+  className = "",
+  titleClassName = "",
+}: {
+  title: string;
+  imageUrl: string;
+  className?: string;
+  titleClassName?: string;
+}) {
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-[16px] bg-[#29358f] shadow-[0_18px_40px_rgba(27,37,103,0.14)] ${className}`}
+    >
+      {imageUrl ? (
+        <>
+          <img
+            src={imageUrl}
+            alt={title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(25,39,123,0.04)_0%,rgba(19,26,95,0.78)_100%)]" />
+        </>
+      ) : (
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#3759c6_0%,#222b88_100%)]" />
+      )}
+
+      <div className="absolute inset-x-0 bottom-0 p-4">
+        <h3
+          className={`max-w-[88%] text-[19px] font-medium leading-[1.03] tracking-[-0.03em] text-white md:text-[20px] ${titleClassName}`}
+        >
+          {title}
+        </h3>
+      </div>
+    </div>
+  );
+}
+
+function ServicesShowcaseSection({
+  section,
+}: {
+  section: ServicesShowcaseData | null;
+}) {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const col1Ref = useRef<HTMLDivElement | null>(null);
+  const col2Ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!sectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      if (col1Ref.current) {
+        gsap.fromTo(
+          col1Ref.current,
+          { y: -140 },
+          {
+            y: 180,
+            ease: "none",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.7,
+            },
+          }
+        );
+      }
+
+      if (col2Ref.current) {
+        gsap.fromTo(
+          col2Ref.current,
+          { y: 140 },
+          {
+            y: -180,
+            ease: "none",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.7,
+            },
+          }
+        );
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  if (!section) return null;
+
+  const engineering = section.cards.find((card) => card.title === "Engineering");
+  const maritime = section.cards.find(
+    (card) => card.title === "Field & Maritime Services"
+  );
+  const managed = section.cards.find((card) => card.title === "Managed Services");
+  const ran = section.cards.find((card) => card.title === "RAN");
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden bg-[#f7f7fa] py-20 lg:py-24"
+    >
+      <div className="container mx-auto px-6 md:px-12">
+        <div className="grid items-start gap-1 lg:grid-cols-[53%_47%] xl:grid-cols-[53%_47%]">
+          <div className="relative z-20 max-w-[540px] pt-2 lg:pt-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-[#8d8f99] md:text-[12px]">
+              {section.eyebrow}
+            </p>
+
+            <h2 className="mt-4 text-[33px] font-semibold leading-[1.08] tracking-[-0.035em] text-[#27348b] md:text-[47px]">
+              <span className="inline whitespace-nowrap">Services Engineered for</span>
+              <br />
+              <span className="inline whitespace-nowrap">Reliability and Scale</span>
+            </h2>
+
+            <p className="mt-5 max-w-[430px] text-[16px] leading-[1.55] text-[#45527f] md:text-[18px]">
+              {section.description}
+            </p>
+
+            <div className="mt-10 max-w-[340px] rounded-[14px] bg-[#edf2f8] px-5 py-5">
+              <div className="text-[44px] font-light leading-none tracking-[-0.04em] text-[#27348b] md:text-[50px]">
+                {section.statValue}
+              </div>
+              <p className="mt-3 text-[15px] leading-[1.35] text-[#27348b] md:text-[16px]">
+                {section.statLabel}
+              </p>
+            </div>
+
+            <a
+              href={section.ctaHref || "#"}
+              className="mt-6 inline-flex h-[42px] items-center justify-center rounded-full bg-[#edf5fb] px-7 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#2785c7] transition-all duration-300 hover:scale-[1.03]"
+            >
+              {section.ctaText}
+              <span className="ml-2 text-[15px]">→</span>
+            </a>
+          </div>
+
+          <div className="relative z-20 hidden h-[660px] overflow-hidden lg:block lg:-ml-0 xl:-ml-0">
+            <div className="grid h-full grid-cols-[180px_180px] justify-start gap-[12px] xl:grid-cols-[190px_190px]">
+              <div ref={col1Ref} className="space-y-[12px] will-change-transform">
+                {engineering ? (
+                  <ServiceImageCard
+                    title={engineering.title}
+                    imageUrl={engineering.imageUrl}
+                    className="h-[258px] xl:h-[272px]"
+                  />
+                ) : null}
+
+                {maritime ? (
+                  <ServiceImageCard
+                    title="Maritime"
+                    imageUrl={maritime.imageUrl}
+                    className="h-[296px] xl:h-[308px]"
+                  />
+                ) : null}
+              </div>
+
+              <div ref={col2Ref} className="space-y-[12px] will-change-transform">
+                {maritime ? (
+                  <ServiceImageCard
+                    title="Field Services"
+                    imageUrl={maritime.imageUrl}
+                    className="h-[108px] xl:h-[114px]"
+                    titleClassName="text-[17px] md:text-[18px]"
+                  />
+                ) : null}
+
+                {managed ? (
+                  <ServiceImageCard
+                    title={managed.title}
+                    imageUrl={managed.imageUrl}
+                    className="h-[272px] xl:h-[286px]"
+                  />
+                ) : null}
+
+                {ran ? (
+                  <ServiceImageCard
+                    title={ran.title}
+                    imageUrl={ran.imageUrl}
+                    className="h-[232px] xl:h-[244px]"
+                  />
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:hidden">
+            {section.cards.map((item) => (
+              <ServiceImageCard
+                key={item.id}
+                title={item.title}
+                imageUrl={item.imageUrl}
+                className="h-[240px]"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[230px] overflow-hidden">
+        <div
+          className="absolute inset-x-0 bottom-0 h-[188px] bg-[#2f5db7]"
+          style={{
+            clipPath:
+              "polygon(0% 100%, 0% 76%, 9% 71%, 18% 68%, 27% 64%, 35% 57%, 40% 50%, 45% 42%, 50% 42%, 58% 41%, 66% 41%, 100% 41%, 100% 100%)",
+          }}
+        />
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute left-[10%] top-[76%] h-2 w-2 rounded-full bg-white" />
+          <div className="absolute left-[18%] top-[70%] h-2 w-2 rounded-full bg-white" />
+          <div className="absolute left-[44%] top-[66%] h-2 w-2 rounded-full bg-white" />
+          <div className="absolute left-[61%] top-[48%] h-2 w-2 rounded-full bg-white" />
+          <div className="absolute left-[73%] top-[58%] h-2 w-2 rounded-full bg-white" />
+          <div className="absolute left-[86%] top-[50%] h-2 w-2 rounded-full bg-white" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function GlobalPresenceSection({
   section,
 }: {
@@ -274,32 +517,28 @@ function GlobalPresenceSection({
 
     const ctx = gsap.context(() => {
       gsap.set(mapWrapRef.current, {
-        scale: 0.48,
-        y: 150,
+        scale: 0.62,
+        y: 110,
         transformOrigin: "center center",
       });
 
       gsap.to(mapWrapRef.current, {
-        scale: 1.18,
-        y: -10,
+        scale: 1.16,
+        y: -8,
         ease: "power3.out",
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top 92%",
-          end: "top 28%",
-          scrub: 1.2,
+          start: "top 88%",
+          end: "top 36%",
+          scrub: 1.15,
         },
       });
 
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: "top 92%",
-        onEnter: () => {
-          lottieRef.current?.play();
-        },
-        onEnterBack: () => {
-          lottieRef.current?.play();
-        },
+        start: "top 88%",
+        onEnter: () => lottieRef.current?.play(),
+        onEnterBack: () => lottieRef.current?.play(),
       });
     }, sectionRef);
 
@@ -316,7 +555,7 @@ function GlobalPresenceSection({
     >
       <div className="container mx-auto px-6 pb-0 pt-10 md:px-12 md:pt-12">
         <div className="flex flex-col gap-10 md:gap-12">
-          <div className="grid gap-10 lg:grid-cols-[1.18fr_0.82fr] lg:items-start">
+          <div className="relative z-10 grid gap-10 lg:grid-cols-[1.18fr_0.82fr] lg:items-start">
             <div className="max-w-[640px]">
               <p className="text-[12px] uppercase tracking-[0.28em] text-white/45 md:text-[13px]">
                 {section.title}
@@ -355,7 +594,7 @@ function GlobalPresenceSection({
 
           <div
             ref={mapWrapRef}
-            className="relative mx-auto -mb-8 w-[144%] max-w-none -translate-x-[11.5%] md:-mb-10 md:w-[136%] md:-translate-x-[9.5%] lg:-mb-12 lg:w-[130%] lg:-translate-x-[7.5%]"
+            className="relative z-0 mx-auto -mb-8 w-[140%] max-w-none -translate-x-[10%] md:-mb-10 md:w-[132%] md:-translate-x-[8%] lg:-mb-12 lg:w-[126%] lg:-translate-x-[6%]"
           >
             {section.mapLottieData ? (
               <Lottie
@@ -376,7 +615,7 @@ function GlobalPresenceSection({
 function WhyChooseUsSection({
   section,
 }: {
-  section: AboutSectionData | null;
+  section: WhyChooseUsData | null;
 }) {
   const cards = useMemo(() => section?.cards || [], [section]);
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -388,11 +627,8 @@ function WhyChooseUsSection({
 
   const getLottieRef = (id: number) => {
     if (!lottieRefs.current[id]) {
-      lottieRefs.current[id] = {
-        current: null,
-      };
+      lottieRefs.current[id] = { current: null };
     }
-
     return lottieRefs.current[id];
   };
 
@@ -414,16 +650,12 @@ function WhyChooseUsSection({
           });
         }
       },
-      {
-        threshold: 0.35,
-      }
+      { threshold: 0.35 }
     );
 
     observer.observe(sectionEl);
 
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [cards]);
 
   const handleHoverPlay = (id: number) => {
@@ -496,13 +728,15 @@ function WhyChooseUsSection({
 export default function AboutUsPageContent({
   hero,
   storySection,
+  servicesShowcaseSection,
   globalPresenceSection,
   whyChooseUsSection,
 }: {
   hero: AboutHeroData | null;
   storySection: StorySectionData | null;
+  servicesShowcaseSection: ServicesShowcaseData | null;
   globalPresenceSection: GlobalPresenceData | null;
-  whyChooseUsSection: AboutSectionData | null;
+  whyChooseUsSection: WhyChooseUsData | null;
 }) {
   return (
     <main className="min-h-screen bg-[#081326] text-white">
@@ -527,11 +761,23 @@ export default function AboutUsPageContent({
               {hero?.title ||
                 "Transforming Satellite Capacity into Reliable, Delivered Connectivity."}
             </h1>
+
+            {hero?.ctaText ? (
+              <a
+                href={hero.ctaHref || "#"}
+                className="mt-10 inline-flex h-[46px] items-center justify-center rounded-full bg-[linear-gradient(90deg,#355de8_0%,#2d6cff_100%)] px-8 text-[13px] font-semibold uppercase tracking-[0.08em] text-white transition-all duration-300 hover:scale-[1.03]"
+              >
+                {hero.ctaText}
+                <span className="ml-2 text-[16px]">→</span>
+              </a>
+            ) : null}
           </div>
         </div>
       </section>
 
       <StorySection section={storySection} />
+
+      <ServicesShowcaseSection section={servicesShowcaseSection} />
 
       <GlobalPresenceSection section={globalPresenceSection} />
 
