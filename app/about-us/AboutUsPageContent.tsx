@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -154,6 +153,69 @@ function FallbackIcon({ title }: { title: string }) {
   }
 
   return <RefreshCcw size={68} strokeWidth={1.3} className="text-[#4478ff]" />;
+}
+
+function parseCountValue(value: string) {
+  const cleaned = value.trim();
+  const numberPart = cleaned.replace(/[^0-9]/g, "");
+  const numericValue = numberPart ? parseInt(numberPart, 10) : 0;
+  const prefixMatch = cleaned.match(/^[^0-9]+/);
+  const suffixMatch = cleaned.match(/[^0-9,.\s]+$/);
+
+  return {
+    numericValue,
+    prefix: prefixMatch ? prefixMatch[0] : "",
+    suffix: suffixMatch ? suffixMatch[0] : "",
+  };
+}
+
+function CountUpNumber({
+  value,
+  className = "",
+  duration = 1.8,
+}: {
+  value: string;
+  className?: string;
+  duration?: number;
+}) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const { numericValue, prefix, suffix } = parseCountValue(value);
+    if (!numericValue) {
+      ref.current.textContent = value;
+      return;
+    }
+
+    const counter = { val: 0 };
+
+    const trigger = ScrollTrigger.create({
+      trigger: ref.current,
+      start: "top 88%",
+      once: true,
+      onEnter: () => {
+        gsap.to(counter, {
+          val: numericValue,
+          duration,
+          ease: "power2.out",
+          onUpdate: () => {
+            if (!ref.current) return;
+            ref.current.textContent = `${prefix}${Math.round(counter.val).toLocaleString()}${suffix}`;
+          },
+        });
+      },
+    });
+
+    ref.current.textContent = `${prefix}0${suffix}`;
+
+    return () => {
+      trigger.kill();
+    };
+  }, [value, duration]);
+
+  return <span ref={ref} className={className} />;
 }
 
 function StorySection({ section }: { section: StorySectionData | null }) {
@@ -404,7 +466,7 @@ function ServicesShowcaseSection({
 
             <div className="mt-10 max-w-[340px] rounded-[14px] bg-[#edf2f8] px-5 py-5">
               <div className="text-[44px] font-light leading-none tracking-[-0.04em] text-[#27348b] md:text-[50px]">
-                {section.statValue}
+                <CountUpNumber value={section.statValue} />
               </div>
               <p className="mt-3 text-[15px] leading-[1.35] text-[#27348b] md:text-[16px]">
                 {section.statLabel}
@@ -582,7 +644,7 @@ function GlobalPresenceSection({
               {section.stats.map((item) => (
                 <div key={item.id} className="text-center">
                   <div className="text-[52px] font-light leading-none tracking-[-0.04em] text-white md:text-[62px]">
-                    {item.value}
+                    <CountUpNumber value={item.value} />
                   </div>
                   <p className="mt-6 text-[16px] leading-none text-white/85 md:text-[18px]">
                     {item.title}
@@ -789,4 +851,4 @@ export default function AboutUsPageContent({
       />
     </main>
   );
-}
+} 
