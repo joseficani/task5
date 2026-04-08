@@ -1,7 +1,10 @@
+
+
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type FixedNavbarProps = {
   aboutHref?: string;
@@ -16,6 +19,9 @@ export default function FixedNavbar({
 }: FixedNavbarProps) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  const isHomePage = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,21 +41,27 @@ export default function FixedNavbar({
     { label: "Contact", href: contactHref },
   ];
 
-  const desktopLinkClass = `text-sm font-medium transition-colors duration-300 ${
-    scrolled ? "text-[#1f2f73] hover:text-[#2f79ff]" : "text-white/85 hover:text-white"
-  }`;
+  const shouldUseDarkText = scrolled || isHomePage;
 
-  const mobileLinkClass = `py-3 text-sm font-medium transition-colors duration-300 ${
-    scrolled ? "text-[#1f2f73] hover:text-[#2f79ff]" : "text-white/85 hover:text-white"
-  }`;
+  const headerClass = scrolled
+    ? "bg-white/78 backdrop-blur-md shadow-[0_10px_30px_rgba(8,19,38,0.10)]"
+    : "bg-transparent";
+
+  const logoClass = shouldUseDarkText
+    ? "text-[#1f2f73]"
+    : "text-white";
+
+  const navLinkClass = shouldUseDarkText
+    ? "text-[#1f2f73] hover:text-[#2f79ff]"
+    : "text-white/85 hover:text-white";
+
+  const mobileButtonClass = shouldUseDarkText
+    ? "border-[#1f2f73]/15 text-[#1f2f73] bg-white/60"
+    : "border-white/15 text-white bg-white/5";
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        scrolled
-          ? "bg-white/78 backdrop-blur-md shadow-[0_10px_30px_rgba(8,19,38,0.10)]"
-          : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${headerClass}`}
     >
       <div
         className={`container mx-auto flex items-center justify-between px-6 md:px-12 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
@@ -58,10 +70,10 @@ export default function FixedNavbar({
       >
         <Link
           href="/"
-          className={`font-semibold tracking-tight transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`font-semibold tracking-tight transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${logoClass} ${
             scrolled
-              ? "text-[1.65rem] text-[#1f2f73] scale-[0.88]"
-              : "text-[2.1rem] text-white scale-100"
+              ? "text-[1.65rem] scale-[0.88]"
+              : "text-[2.1rem] scale-100"
           } origin-left`}
         >
           Home
@@ -70,11 +82,19 @@ export default function FixedNavbar({
         <nav className="hidden items-center gap-8 md:flex">
           {navItems.map((item) =>
             item.href.startsWith("/") ? (
-              <Link key={item.href} href={item.href} className={desktopLinkClass}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`text-sm font-medium transition-colors duration-300 ${navLinkClass}`}
+              >
                 {item.label}
               </Link>
             ) : (
-              <a key={item.href} href={item.href} className={desktopLinkClass}>
+              <a
+                key={item.href}
+                href={item.href}
+                className={`text-sm font-medium transition-colors duration-300 ${navLinkClass}`}
+              >
                 {item.label}
               </a>
             )
@@ -84,11 +104,7 @@ export default function FixedNavbar({
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 md:hidden ${
-            scrolled
-              ? "border-[#1f2f73]/15 text-[#1f2f73] bg-white/60"
-              : "border-white/15 text-white bg-white/5"
-          }`}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 md:hidden ${mobileButtonClass}`}
           aria-label="Toggle menu"
         >
           ☰
@@ -99,7 +115,7 @@ export default function FixedNavbar({
         className={`overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
           open ? "max-h-80 border-t" : "max-h-0 border-t-0"
         } ${
-          scrolled
+          shouldUseDarkText
             ? "border-[#1f2f73]/10 bg-white/92 backdrop-blur-md"
             : "border-white/10 bg-[#081326]/92 backdrop-blur-md"
         }`}
@@ -111,7 +127,7 @@ export default function FixedNavbar({
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={mobileLinkClass}
+                className={`py-3 text-sm font-medium transition-colors duration-300 ${navLinkClass}`}
               >
                 {item.label}
               </Link>
@@ -120,7 +136,7 @@ export default function FixedNavbar({
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={mobileLinkClass}
+                className={`py-3 text-sm font-medium transition-colors duration-300 ${navLinkClass}`}
               >
                 {item.label}
               </a>
